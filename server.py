@@ -1,5 +1,13 @@
 import os
 from flask import Flask, request, jsonify, send_from_directory
+from erthasys import ErthaSys
+from utils import base64_to_numpy
+from utils.base64utils import numpy_to_base64
+
+IMG_SIZE = 512  # Input image dims: 512x512 px
+
+erthasys = ErthaSys(IMG_SIZE)
+erthasys.load_weights("erthasys/model/InceptionResNetV2-UNet.h5")
 
 app = Flask(__name__, static_folder="frontend/build")
 
@@ -13,20 +21,22 @@ def serve(path):
         return send_from_directory(app.static_folder, 'index.html')
 
 
-@app.route('/record', methods=["POST"])
+@app.route('/erthasys', methods=["POST"])
 def record():
     try:
-        pass
+        image = base64_to_numpy(request.json["image"])
+        prediction, class_distribution = erthasys.get_segmented_image(image)
+        return jsonify(
+            success=True,
+            prediction=numpy_to_base64(prediction),
+            class_distribution=class_distribution
+        )
 
     except Exception as e:
-        print(f"ERROR: {type(e)}")
+        print(f"ERROR: {e}")
         return jsonify(
             success=False
         )
-
-    return jsonify(
-        success=True
-    )
 
 
 if __name__ == "__main__":

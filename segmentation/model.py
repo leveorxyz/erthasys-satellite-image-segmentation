@@ -2,11 +2,16 @@ import tensorflow as tf
 
 
 class InceptionV2UNet:
-    def __init__(self, img_size: int = 512):
-        self.img_size = img_size
+    def __init__(self, img_size: int):
+        self.preprocess = \
+            tf.keras.applications.inception_resnet_v2.preprocess_input
+        self.model = self.get_model(img_size)
 
     @staticmethod
-    def conv_block(input, num_filters):
+    def conv_block(
+        input: tf.Tensor,
+        num_filters: int
+    ) -> tf.Tensor:
         x = tf.keras.layers.Conv2D(num_filters, 3, padding="same")(input)
         x = tf.keras.layers.BatchNormalization()(x)
         x = tf.keras.layers.Activation("relu")(x)
@@ -18,7 +23,11 @@ class InceptionV2UNet:
         return x
 
     @staticmethod
-    def decoder_block(input, skip_features, num_filters):
+    def decoder_block(
+        input: int,
+        skip_features: tf.Tensor,
+        num_filters: int
+    ) -> tf.Tensor:
         x = tf.keras.layers.Conv2DTranspose(
             num_filters, (2, 2), strides=2, padding="same")(input)
         x = tf.keras.layers.Concatenate()([x, skip_features])
@@ -26,13 +35,13 @@ class InceptionV2UNet:
 
         return x
 
-    def __call__(self):
+    def get_model(self, img_size: int) -> tf.keras.models.Model:
         """ Input """
-        input_shape = (self.img_size, self.img_size, 3)
+        input_shape = (img_size, img_size, 3)
         inputs = tf.keras.layers.Input(input_shape)
 
         """ Pre-trained InceptionResNetV2 Model """
-        encoder = tf.keras.layers.InceptionResNetV2(
+        encoder = tf.keras.applications.InceptionResNetV2(
             include_top=False, weights="imagenet", input_tensor=inputs)
 
         """ Encoder """
@@ -62,6 +71,5 @@ class InceptionV2UNet:
         outputs = tf.keras.layers.Conv2D(
             6, 1, padding="same", activation="softmax")(dropout)
 
-        model = tf.keras.layers.Model(
+        return tf.keras.models.Model(
             inputs, outputs, name="InceptionResNetV2-UNet")
-        return model

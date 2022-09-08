@@ -44,8 +44,9 @@ class ErthaSys(InceptionV2UNet):
         class_distribution = {}
         n_pixels = (self.img_size * self.img_size)
         for classname in self.classes:
-            class_distribution[classname] = \
-                np.sum(image == self.classes.index(classname)) / n_pixels
+            percentage = (
+                np.sum(image == self.classes.index(classname)) / n_pixels) * 100
+            class_distribution[classname] = "{:.2f}%".format(percentage)
 
         return class_distribution
 

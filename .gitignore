@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # Pretrained weights
-segmentation/models/InceptionResNetV2-UNet.h5
+InceptionResNetV2-UNet.h5

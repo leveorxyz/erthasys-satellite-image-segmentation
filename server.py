@@ -1,13 +1,24 @@
 import os
+import gdown
 from flask import Flask, request, jsonify, send_from_directory
 from erthasys import ErthaSys
 from utils import base64_to_numpy
+# from utils import GDriveDownloader
 from utils.base64utils import numpy_to_base64
 
 IMG_SIZE = 512  # Input image dims: 512x512 px
 
 erthasys = ErthaSys(IMG_SIZE)
-erthasys.load_weights("erthasys/model/InceptionResNetV2-UNet.h5")
+# downloader = GDriveDownloader()
+
+# ... Download and load pre-trained weights
+weight_fid = "1y0rLn5YWiVntxGlfXbwgZYAFzXeyi3I9"
+weight_path = "erthasys/model/InceptionResNetV2-UNet.h5"
+
+if not os.path.exists(weight_path):
+    gdown.download(id=weight_fid, output=weight_path)
+
+erthasys.load_weights(weight_path)
 
 app = Flask(__name__, static_folder="frontend/build")
 
